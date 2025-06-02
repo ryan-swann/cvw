@@ -22,7 +22,7 @@ def synthsintocsv():
     '''
     print("This takes a moment...")
     bashCommand = "find . -path '*runs/wallypipelinedcore_*' -prune"
-    output = subprocess.check_output(['bash','-c', bashCommand])
+    output = subprocess.check_output(['bash', '-c', bashCommand])
     allSynths = output.decode("utf-8").split('\n')[:-1]
 
     specReg = re.compile('[a-zA-Z0-9]+')
@@ -34,39 +34,37 @@ def synthsintocsv():
 
         for oneSynth in allSynths:
             descrip = specReg.findall(oneSynth)
-    #        print("From " + oneSynth + " Find ")
-    #        for d in descrip:
-    #            print(d)
-            base = 4 if descrip[3] == "sram" else 3
-            width = descrip[base][:4]
-            config = descrip[base][4:]
-            if descrip[base+1][-2:] == 'nm':
-                mod = ''
-            else:
-                mod = descrip[base+1]
-                descrip = descrip[1:]
-            tech = descrip[base+1][:-2]
-            freq = descrip[base+2]
-    #        print(width, config, mod, tech, freq)
-            metrics = []
-            for phrase in ['Path Slack', 'Design Area']:
-                bashCommand = 'grep "{}" '+ oneSynth[2:]+'/reports/*qor*'
-                bashCommand = bashCommand.format(phrase)
-    #            print(bashCommand)
-                try: 
-                    output = subprocess.check_output(['bash','-c', bashCommand])
-                    nums = metricReg.findall(str(output))
-                    nums = [float(m) for m in nums]
-                    metrics += nums
-                except: 
-                    print(width + config + tech + '_' + freq + " doesn't have reports")
-            if metrics == []:
-                pass
-            else:
-                delay = 1000/int(freq) - metrics[0]
-                area = metrics[1]
-                writer.writerow([width, config, mod, tech, freq, delay, area])
 
+            try:
+                # Find start of structured part (after 'wallypipelinedcore')
+                start = descrip.index('wallypipelinedcore') + 1
+
+                width_config = descrip[start]        # e.g., 'rv64gc'
+                mod = descrip[start + 1]             # e.g., 'orig'
+                technm = descrip[start + 2]          # e.g., 'sky130nm'
+                freq = descrip[start + 3]            # e.g., '10000'
+
+                width = width_config[:4]             # 'rv64'
+                config = width_config[4:]            # 'gc'
+                tech = technm[:-2]                   # 'sky130'
+
+                metrics = []
+                for phrase in ['Path Slack', 'Design Area']:
+                    bashCommand = f'grep "{phrase}" {oneSynth[2:]}/reports/*qor*'
+                    try:
+                        output = subprocess.check_output(['bash', '-c', bashCommand])
+                        nums = metricReg.findall(str(output))
+                        nums = [float(m) for m in nums]
+                        metrics += nums
+                    except subprocess.CalledProcessError:
+                        print(f"{width}{config}{tech}_{freq} doesn't have reports")
+
+                if metrics:
+                    delay = 1000 / int(freq) - metrics[0]
+                    area = metrics[1]
+                    writer.writerow([width, config, mod, tech, freq, delay, area])
+            except Exception as e:
+                print(f"Skipping {oneSynth} due to parsing error: {e}")
 
 def synthsfromcsv(filename):
     Synth = namedtuple("Synth", "width config mod tech freq delay area")
@@ -163,21 +161,22 @@ def plotFeatures(tech, width, config):
     delays, areas, labels = ([] for i in range(3))
     freq = techdict[tech].targfreq
     for oneSynth in allSynths:
-        if (tech == oneSynth.tech) & (freq == oneSynth.freq) & (oneSynth.config == config) & (width == oneSynth.width):
-            delays += [oneSynth.delay]
-            areas += [oneSynth.area]
-            labels += [oneSynth.mod]
+        if (tech == oneSynth.tech) and (freq == oneSynth.freq) and (oneSynth.config == config) and (width == oneSynth.width):
+            delays.append(oneSynth.delay)
+            areas.append(oneSynth.area)
+            labels.append(oneSynth.mod)
 
-    if (delays == []):
-        print("No delays found for tech ", tech, " freq ", freq, ". Did you set --sky130freq, --sky90freq and --tsmcfreq?\n")
+    if not delays:
+        # Just skip silently or add `return` if you want quiet operation
+        return
 
-    fig, (ax) = plt.subplots(1, 1)
-
+    fig, ax = plt.subplots(1, 1)
     fig = areaDelay(tech, delays, areas, labels, fig, ax)
 
-    titlestr = tech+'_'+width+config+'_'+str(freq)+'MHz'
+    titlestr = f'{tech}_{width}{config}_{freq}MHz'
     plt.title(titlestr)
-    plt.savefig(final_directory + '/features_'+titlestr+'.png')
+    plt.savefig(final_directory + f'/features_{titlestr}.png')
+
 
 
 def plotConfigs(tech, mod=''):

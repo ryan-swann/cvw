@@ -8,7 +8,8 @@ from multiprocessing import Pool
 
 def runSynth(config, mod, tech, freq, maxopt, usesram):
     global pool
-    prefix = "syn_sram_" if usesram else "syn_"
+    #prefix = "syn_sram_" if usesram else "syn_"
+    prefix = ""
     cfg = prefix + config
     command = f"make synth DESIGN=wallypipelinedcore CONFIG={cfg} MOD={mod} TECH={tech} DRIVE=FLOP FREQ={freq} MAXOPT={maxopt} USESRAM={usesram} MAXCORES=1"
     pool.map(mask, [command])
@@ -20,7 +21,14 @@ def mask(command):
 if __name__ == '__main__':
     
     techs = ['sky130', 'sky90', 'tsmc28', 'tsmc28psyn']
-    allConfigs = ['rv32gc', 'rv32imc', 'rv64gc', 'rv64imc', 'rv32e', 'rv32i', 'rv64i']
+    allConfigs = ['rv32gc', 
+                  'rv32imc', 
+                  'rv64gc', 
+                  'rv64imc',
+                  'rv32i', 
+                  'rv64i',
+                  'rv32e', 
+                  ]
     freqVaryPct = [-20, -12, -8, -6, -4, -2, 0, 2, 4, 6, 8, 12, 20]
 #    freqVaryPct = [-20, -10, 0, 10, 20]
 

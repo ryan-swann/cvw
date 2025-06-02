@@ -43,11 +43,17 @@ DIRS = $(DIRS32) $(DIRS64)
 configs: $(CONFIG)
 $(CONFIG):
 	@echo $(CONFIG)
+	@echo "cp -r $(OLDCONFIGDIR)/shared/*.vh $(CONFIGDIR)"
+	@echo "cp -r $(OLDCONFIGDIR)/$(CONFIG)/*.vh $(CONFIGDIR)"
+	cp -r $(OLDCONFIGDIR)/$(CONFIG)/*.vh $(CONFIGDIR)
 	cp -r $(OLDCONFIGDIR)/shared/*.vh $(CONFIGDIR)
+	@echo "Case One"
 ifeq ($(MOD), orig)
 	cp -rf $(OLDCONFIGDIR)/$(CONFIG)/config.vh $(CONFIGDIR) | true
+	@echo "Case Two"
 else
-	cp -rf $(OLDCONFIGDIR)/$(CONFIG)_$(MOD)/config.vh $(CONFIGDIR) | true
+	cp -rf $(OLDCONFIGDIR)/$(CONFIG)/config.vh $(CONFIGDIR) | true
+	@echo "Case Three"
 endif
 
 ifeq ($(SAIFPOWER), 1)
