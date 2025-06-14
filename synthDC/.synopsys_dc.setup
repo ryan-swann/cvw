@@ -62,10 +62,11 @@ lappend search_path ./scripts
 lappend search_path ./hdl
 lappend search_path ./mapped
 if {($tech == "tsmc28psyn")} {
-    lappend target_library $SYN_memory/ts1n28hpcpsvtb64x128m4sw_180a/NLDM/ts1n28hpcpsvtb64x128m4sw_tt0p9v25c.db
-    lappend target_library $SYN_memory/ts1n28hpcpsvtb64x44m4sw_180a/NLDM/ts1n28hpcpsvtb64x44m4sw_tt0p9v25c.db
-    lappend target_library $SYN_memory/tsdn28hpcpa1024x68m4mw_130a/NLDM/tsdn28hpcpa1024x68m4mw_tt0p9v25c.db
-    lappend target_library $SYN_memory/tsdn28hpcpa64x32m4mw_130a/NLDM/tsdn28hpcpa64x32m4mw_tt0p9v25c.db
+    set memory /home/jstine/WallyMem/rv64gc/
+    lappend target_library $memory/ts1n28hpcpsvtb64x128m4sw_180a/NLDM/ts1n28hpcpsvtb64x128m4sw_tt0p9v25c.db
+    lappend target_library $memory/ts1n28hpcpsvtb64x44m4sw_180a/NLDM/ts1n28hpcpsvtb64x44m4sw_tt0p9v25c.db
+    lappend target_library $memory/tsdn28hpcpa1024x68m4mw_130a/NLDM/tsdn28hpcpa1024x68m4mw_tt0p9v25c.db
+    lappend target_library $memory/tsdn28hpcpa64x32m4mw_130a/NLDM/tsdn28hpcpa64x32m4mw_tt0p9v25c.db
     lappend mw_reference_library $MW_REFERENCE_LIBRARY/ts1n28hpcpsvtb64x44m4sw
     lappend mw_reference_library $MW_REFERENCE_LIBRARY/ts1n28hpcpsvtb64x128m4sw
     lappend mw_reference_library $MW_REFERENCE_LIBRARY/tsdn28hpcpa1024x68m4mw
