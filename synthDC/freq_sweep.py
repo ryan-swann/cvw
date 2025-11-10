@@ -1,29 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Frequency Sweep Tool for CVW Synthesis
-=====================================================
-
-This script performs automated frequency sweeps on CVW designs to analyze
-area vs frequency tradeoffs and generate visualization plots.
-
-KEY IMPLEMENTATION LEARNINGS:
-=============================
-
-1. ENVIRONMENT HANDLING IN SUBPROCESSES:
-   - subprocess.run() doesn't automatically inherit shell environment
-   - Must explicitly set WALLY, RISCV, PATH in subprocess env dict
-   - Without proper env vars, synthesis falls back to gtech library (area = 0.0)
-   - Success indicator: "Loading db file" with sky130 library path in output
-
-2. TECHNOLOGY PARAMETER PRECISION:
-   - TECH parameter must be exactly "sky130" (not "sky130nm")
-   - .synopsys_dc.setup file maps technology names to library paths
-   - Incorrect tech name results in generic library usage and failed optimization
-
-3. SHELL COMPATIBILITY FILTERING:
-   - dc_shell-xg-t generates harmless "unexpected operator" warnings on Ubuntu
-   - These are dash vs bash compatibility issues in Synopsys scripts
-   - Filter these warnings to reduce noise without affecting functionality
+CVW Frequency Sweep Tool - Automated synthesis across frequency ranges
+with comprehensive visualization and Pareto analysis.
 
 4. SYNTHESIS SUCCESS VALIDATION:
    - Return code 0 doesn't guarantee successful technology mapping

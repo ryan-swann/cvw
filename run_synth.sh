@@ -1,63 +1,10 @@
 #!/bin/bash
 
 # CVW Synthesis Setup and Run Script
-# ===================================
+# One-command synthesis from clean repo clone
 #
-# This script sets up the environment and runs synthesis from a clean repo clone.
-# It handles all the common issues encountered when setting up CVW synthesis.
-#
-# USAGE:
-#   ./run_synth.sh [design] [config] [freq] [tech] [width]
-#
-# EXAMPLES:
-#   ./run_synth.sh                              # Default: adder, rv32e, 100MHz, sky130, 64-bit
-#   ./run_synth.sh adder rv32e 150 sky130 64    # Custom parameters
-#   ./run_synth.sh adder rv64gc 200 sky130 32   # Different config and width
-#
-# KEY LEARNINGS AND TROUBLESHOOTING:
-# ==================================
-#
-# 1. ENVIRONMENT SETUP ISSUES:
-#    - CVW setup.sh often has permission warnings (Imperas, site-setup.sh) - these are normal
-#    - WALLY and RISCV environment variables MUST be set for synthesis to work
-#    - Design Compiler must be in PATH: /opt/snps/syn/W-2024.09-SP4-1/bin
-#
-# 2. TECHNOLOGY LIBRARY PROBLEMS:
-#    - Using TECH=sky130nm fails - must use TECH=sky130 (no 'nm' suffix)
-#    - Sky130 libraries expected at: $RISCV/cad/lib/sky130_osu_sc_t12/12T_ms/lib/
-#    - If synthesis shows "gtech" library, environment variables are not set correctly
-#    - Successful synthesis should show: sky130_osu_sc_12T_ms_TT_1P8_25C.ccs.db
-#
-# 3. CONFIG FILE PATH ISSUES:
-#    - Original Makefile had incorrect path: $(OLDCONFIGDIR)/deriv/$(CONFIG)/config.vh
-#    - Fixed path should be: $(OLDCONFIGDIR)/$(CONFIG)/config.vh
-#    - The 'deriv' directory doesn't exist in CVW - this was a legacy path issue
-#
-# 4. SHELL COMPATIBILITY WARNINGS:
-#    - dc_shell-xg-t script has bash/dash compatibility issues with '==' vs '=' operators
-#    - Warnings like "unexpected operator" are cosmetic - synthesis still works
-#    - /bin/sh -> dash on Ubuntu causes these warnings, but doesn't prevent synthesis
-#
-# 5. SYNTHESIS RESULT VALIDATION:
-#    - Area of 0.000000 µm² indicates technology library not loaded (using gtech fallback)
-#    - Proper synthesis should show realistic areas (e.g., 3000-4500 µm² for 64-bit adder)
-#    - Check for "Loading db file" messages to confirm correct library usage
-#
-# 6. FREQUENCY-AREA TRADEOFFS OBSERVED:
-#    - 50 MHz:  3287.4 µm² (relaxed timing, smaller area)
-#    - 100 MHz: 4085.5 µm² (balanced optimization)
-#    - 150 MHz: 3383.6 µm² (aggressive optimization, different cell choices)
-#    - Higher frequencies don't always mean larger area due to optimization strategies
-#
-# 7. SUBPROCESS ENVIRONMENT ISSUES:
-#    - Python freq_sweep.py script needs explicit environment variable passing
-#    - subprocess.run() doesn't inherit all shell environment automatically
-#    - Must explicitly set WALLY, RISCV, and PATH in subprocess environment
-#
-# 8. REPORT PARSING LESSONS:
-#    - Area reports are in reports/area.rep with "Total cell area:" field
-#    - Timing reports show slack values - negative slack = timing violation
-#    - QoR reports provide comprehensive quality metrics
+# Usage: ./run_synth.sh [design] [config] [freq] [tech] [width]
+# Example: ./run_synth.sh adder rv32e 100 sky130 64
 #    - All reports use consistent directory structure in runs/[design]_[config]_*/
 #
 # TESTED CONFIGURATIONS:
