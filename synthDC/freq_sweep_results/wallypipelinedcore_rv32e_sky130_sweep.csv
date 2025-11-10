@@ -1,0 +1,97 @@
+area,comb_area,freq,num_cells,path_delay,slack,stdout,success,synthesis_time
+86486.360996,43591.165111,50,6623,19.405087,0.451382,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_50_MHz_2025-11-09-22-51__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_50_MHz_2025-11-09-22-51__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_50_MHz_2025-11-09-22-51__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomizati",True,14.569336652755737
+86604.065392,43708.869507,60,6648,16.292067,0.231075,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_60_MHz_2025-11-09-22-51__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_60_MHz_2025-11-09-22-51__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_60_MHz_2025-11-09-22-51__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomizati",True,14.593217372894287
+86515.664995,43620.46911,70,6627,14.070637,0.071547,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_70_MHz_2025-11-09-22-51__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_70_MHz_2025-11-09-22-51__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_70_MHz_2025-11-09-22-51__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomizati",True,14.631407499313354
+86608.94939,43713.753505,80,6646,12.325421,0.031054,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_80_MHz_2025-11-09-22-52__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_80_MHz_2025-11-09-22-52__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_80_MHz_2025-11-09-22-52__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomizati",True,14.556757688522339
+86699.791787,43804.595902,90,6660,10.93904,0.03061,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_90_MHz_2025-11-09-22-52__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_90_MHz_2025-11-09-22-52__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_90_MHz_2025-11-09-22-52__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomizati",True,14.685634136199951
+86898.082176,44002.886291,100,6706,9.855413,0.003129,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_100_MHz_2025-11-09-22-52__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_100_MHz_2025-11-09-22-52__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_100_MHz_2025-11-09-22-52__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomiz",True,15.236485719680786
+87051.439776,44156.243892,110,6720,8.948196,0.000185,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_110_MHz_2025-11-09-22-52__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_110_MHz_2025-11-09-22-52__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_110_MHz_2025-11-09-22-52__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomiz",True,15.601712703704834
+86653.882178,43758.686294,120,6610,8.123894,0.019732,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_120_MHz_2025-11-09-22-53__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_120_MHz_2025-11-09-22-53__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_120_MHz_2025-11-09-22-53__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomiz",True,14.825870275497437
+86881.964957,43986.769072,130,6641,7.438175,0.002666,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_130_MHz_2025-11-09-22-53__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_130_MHz_2025-11-09-22-53__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_130_MHz_2025-11-09-22-53__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomiz",True,15.407527446746826
+87468.533338,44573.337453,140,6762,6.954492,0.045169,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_140_MHz_2025-11-09-22-53__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_140_MHz_2025-11-09-22-53__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_140_MHz_2025-11-09-22-53__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomiz",True,15.243438243865967
+87058.765751,44163.569866,150,6667,6.522962,0.002376,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_150_MHz_2025-11-09-22-53__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_150_MHz_2025-11-09-22-53__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_150_MHz_2025-11-09-22-53__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomiz",True,15.391012907028198
+87280.49935,44385.303465,160,6705,6.106071,0.004101,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_160_MHz_2025-11-09-22-54__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_160_MHz_2025-11-09-22-54__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_160_MHz_2025-11-09-22-54__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomiz",True,15.285540342330933
+87380.132952,44484.937067,170,6721,2.730498,0.004614,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_170_MHz_2025-11-09-22-54__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_170_MHz_2025-11-09-22-54__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_170_MHz_2025-11-09-22-54__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomiz",True,15.542577505111694
+87759.131339,44863.935454,180,6797,5.416883,0.000832,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_180_MHz_2025-11-09-22-54__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_180_MHz_2025-11-09-22-54__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_180_MHz_2025-11-09-22-54__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomiz",True,15.821721315383911
+87960.352139,45065.156255,190,6829,2.432224,0.00225,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_190_MHz_2025-11-09-22-54__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_190_MHz_2025-11-09-22-54__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_190_MHz_2025-11-09-22-54__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomiz",True,15.961301565170288
+88517.128119,45621.932235,200,6945,4.857621,0.002395,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_200_MHz_2025-11-09-22-55__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/wallypipelinedcore_rv32e_orig_sky130nm_200_MHz_2025-11-09-22-55__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/wallypipelinedcore_rv32e_orig_sky130nm_200_MHz_2025-11-09-22-55__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomiz",True,16.122077703475952

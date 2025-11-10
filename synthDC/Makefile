@@ -45,9 +45,9 @@ $(CONFIG):
 	@echo $(CONFIG)
 	cp -r $(OLDCONFIGDIR)/shared/*.vh $(CONFIGDIR)
 ifeq ($(MOD), orig)
-	cp -rf $(OLDCONFIGDIR)/deriv/$(CONFIG)/config.vh $(CONFIGDIR) | true
+	cp -rf $(OLDCONFIGDIR)/$(CONFIG)/config.vh $(CONFIGDIR) | true
 else
-	cp -rf $(OLDCONFIGDIR)/deriv/$(CONFIG)_$(MOD)/config.vh $(CONFIGDIR) | true
+	cp -rf $(OLDCONFIGDIR)/$(CONFIG)_$(MOD)/config.vh $(CONFIGDIR) | true
 endif
 
 ifeq ($(SAIFPOWER), 1)

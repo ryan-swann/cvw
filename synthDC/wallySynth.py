@@ -6,11 +6,20 @@ import subprocess
 from multiprocessing import Pool
 
 
-def runSynth(config, mod, tech, freq, maxopt, usesram):
+def runSynth(config, mod, tech, freq, maxopt, usesram, design='wallypipelinedcore', width=None):
     global pool
     prefix = "syn_sram_" if usesram else "syn_"
-    cfg = prefix + config
-    command = f"make synth DESIGN=wallypipelinedcore CONFIG={cfg} MOD={mod} TECH={tech} DRIVE=FLOP FREQ={freq} MAXOPT={maxopt} USESRAM={usesram} MAXCORES=1"
+    cfg = prefix + config if design == 'wallypipelinedcore' else config
+
+    # Build command based on design type
+    if design == 'wallypipelinedcore':
+        command = f"make synth DESIGN={design} CONFIG={cfg} MOD={mod} TECH={tech} DRIVE=FLOP FREQ={freq} MAXOPT={maxopt} USESRAM={usesram} MAXCORES=1"
+    else:
+        # For simpler designs like adder, mul, etc.
+        width_param = f" WIDTH={width}" if width else ""
+        command = f"make synth DESIGN={design} CONFIG={config} TECH={tech} DRIVE=FLOP FREQ={freq} MAXOPT={maxopt} MAXCORES=1{width_param}"
+
+    print(f"Running: {command}")
     pool.map(mask, [command])
 
 def mask(command):

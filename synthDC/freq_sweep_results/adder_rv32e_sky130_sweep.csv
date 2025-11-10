@@ -1,0 +1,43 @@
+area,comb_area,freq,num_cells,path_delay,slack,stdout,success,synthesis_time
+3287.420401,3287.420401,50,439,13.229521,6.770479,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/adder_rv32e_orig_sky130nm_50_MHz_2025-11-09-22-34__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/adder_rv32e_orig_sky130nm_50_MHz_2025-11-09-22-34__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/adder_rv32e_orig_sky130nm_50_MHz_2025-11-09-22-34__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enab",True,4.7867958545684814
+3287.420401,3287.420401,75,439,13.229521,0.103812,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/adder_rv32e_orig_sky130nm_75_MHz_2025-11-09-22-34__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/adder_rv32e_orig_sky130nm_75_MHz_2025-11-09-22-34__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/adder_rv32e_orig_sky130nm_75_MHz_2025-11-09-22-34__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enab",True,4.737000465393066
+4085.465982,4085.465982,100,561,9.464712,0.535288,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/adder_rv32e_orig_sky130nm_100_MHz_2025-11-09-22-34__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/adder_rv32e_orig_sky130nm_100_MHz_2025-11-09-22-34__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/adder_rv32e_orig_sky130nm_100_MHz_2025-11-09-22-34__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To e",True,4.9892518520355225
+3867.151178,3867.151178,125,450,7.987745,0.012255,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/adder_rv32e_orig_sky130nm_125_MHz_2025-11-09-22-34__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/adder_rv32e_orig_sky130nm_125_MHz_2025-11-09-22-34__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/adder_rv32e_orig_sky130nm_125_MHz_2025-11-09-22-34__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To e",True,5.082852840423584
+3383.635159,3383.635159,150,448,5.729203,0.937463,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/adder_rv32e_orig_sky130nm_150_MHz_2025-11-09-22-34__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/adder_rv32e_orig_sky130nm_150_MHz_2025-11-09-22-34__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/adder_rv32e_orig_sky130nm_150_MHz_2025-11-09-22-34__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To e",True,4.6861348152160645
+3483.268757,3483.268757,175,464,4.810402,0.903883,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/adder_rv32e_orig_sky130nm_175_MHz_2025-11-09-22-34__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/adder_rv32e_orig_sky130nm_175_MHz_2025-11-09-22-34__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/adder_rv32e_orig_sky130nm_175_MHz_2025-11-09-22-34__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To e",True,4.725507974624634
+3564.343155,3564.343155,200,478,4.222821,0.777179,"DC Synthesis
+rv32e
+cp -r /home/rswann/new_cvw/config/shared/*.vh runs/adder_rv32e_orig_sky130nm_200_MHz_2025-11-09-22-34__f80a677f0/config
+cp -rf /home/rswann/new_cvw/config/rv32e/config.vh runs/adder_rv32e_orig_sky130nm_200_MHz_2025-11-09-22-34__f80a677f0/config | true
+dc_shell-xg-t -64bit -f scripts/synth.tcl | tee runs/adder_rv32e_orig_sky130nm_200_MHz_2025-11-09-22-34__f80a677f0/synth.out
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To e",True,4.752846956253052
