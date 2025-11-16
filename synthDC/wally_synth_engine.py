@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -393,6 +394,11 @@ quit
             qor_data = self._parse_qor_report(qor_file)
             results.update(qor_data)
 
+        # Parse power report
+        power_file = run_dir / "reports" / "power.rep"
+        if power_file.exists():
+            results['power_mw'] = self._parse_power_report(power_file)
+
         return results
 
     def _parse_area_report(self, area_file: Path) -> Optional[float]:
@@ -454,6 +460,42 @@ quit
                 print(f"Error parsing QoR report: {e}")
 
         return results
+
+    def _parse_power_report(self, power_file: Path) -> Optional[float]:
+        """Parse power consumption from synthesis report"""
+        try:
+            with open(power_file) as f:
+                content = f.read()
+
+            # Look for the total power in the hierarchical power report
+            # Format: "wallypipelinedcorewrapper    0.391    3.257  621.882    3.649 100.0"
+            # We want the "Total" power which is the 4th number (3.649 mW in this example)
+            lines = content.split('\n')
+
+            for line in lines:
+                # Look for the top-level module line with power data
+                if 'wallypipelinedcorewrapper' in line or 'wallypipelinedcore' in line:
+                    # Split the line and extract power values
+                    parts = line.strip().split()
+                    if len(parts) >= 5:
+                        try:
+                            # The total power is typically the 4th power column (index 4)
+                            total_power_mw = float(parts[4])
+                            if total_power_mw > 0:
+                                return total_power_mw
+                        except (ValueError, IndexError):
+                            continue
+
+            # Fallback: Look for "Total" power in the summary
+            total_match = re.search(r'Total\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)', content)
+            if total_match:
+                return float(total_match.group(4))  # Total power in mW
+
+        except Exception as e:
+            if self.verbose:
+                print(f"Error parsing power report: {e}")
+
+        return None
 
     def synthesize(self, config: SynthesisConfig) -> SynthesisResult:
         """Run complete synthesis flow"""
@@ -534,9 +576,39 @@ quit
 
         return results
 
-    def save_results(self, results: list[SynthesisResult], filename: str = "synthesis_results.json"):
-        """Save synthesis results to JSON file"""
-        results_data = []
+    def save_results(self, results: list[SynthesisResult], filename: Optional[str] = None,
+                    run_type: str = "batch") -> Path:
+        """Save synthesis results to self-documenting JSON file with metadata"""
+        if not filename:
+            filename = self._generate_results_filename(results, run_type)
+
+        # Create results directory structure with sweep-specific folders
+        results_dir = self.synth_dir / "results"
+        today = time.strftime("%Y-%m-%d")
+        daily_dir = results_dir / today
+
+        # For sweeps, create a dedicated sweep folder with descriptive naming
+        if run_type in ['freq-sweep', 'config-sweep', 'feature-sweep', 'comprehensive']:
+            sweep_timestamp = time.strftime("%H%M%S")
+
+            # Generate descriptive folder name based on sweep characteristics
+            sweep_name = self._generate_sweep_folder_name(results, run_type, sweep_timestamp)
+            sweep_dir = daily_dir / "sweeps" / sweep_name
+            sweep_dir.mkdir(parents=True, exist_ok=True)
+            output_dir = sweep_dir
+        else:
+            daily_dir.mkdir(parents=True, exist_ok=True)
+            output_dir = daily_dir
+
+        # Generate comprehensive metadata
+        metadata = self._generate_run_metadata(results, run_type)
+
+        # Format results data with enhanced structure
+        results_data = {
+            'metadata': metadata,
+            'summary': self._generate_results_summary(results),
+            'results': []
+        }
 
         for result in results:
             data = {
@@ -546,25 +618,362 @@ quit
                     'frequency_mhz': result.config.frequency_mhz,
                     'technology': result.config.technology,
                     'feature_mode': result.config.feature_mode,
-                    'max_optimization': result.config.max_optimization
+                    'max_optimization': result.config.max_optimization,
+                    'use_sram': result.config.use_sram,
+                    'width': result.config.width
                 },
                 'success': result.success,
-                'area_um2': result.area_um2,
-                'slack_ns': result.slack_ns,
-                'power_mw': result.power_mw,
-                'cell_count': result.cell_count,
-                'synthesis_time_s': result.synthesis_time_s,
-                'critical_path_ns': result.critical_path_ns,
+                'metrics': {
+                    'area_um2': result.area_um2,
+                    'slack_ns': result.slack_ns,
+                    'power_mw': result.power_mw,
+                    'cell_count': result.cell_count,
+                    'synthesis_time_s': result.synthesis_time_s,
+                    'critical_path_ns': result.critical_path_ns
+                },
                 'run_directory': str(result.run_directory) if result.run_directory else None,
                 'error_message': result.error_message
             }
-            results_data.append(data)
+            results_data['results'].append(data)
 
-        output_file = self.synth_dir / filename
+        output_file = output_dir / filename
         with open(output_file, 'w') as f:
-            json.dump(results_data, f, indent=2)
+            json.dump(results_data, f, indent=2, sort_keys=True)
+
+        # For sweeps, also create a summary file and copy individual run data
+        if run_type in ['freq-sweep', 'config-sweep', 'feature-sweep', 'comprehensive']:
+            self._create_sweep_summary(output_dir, results, run_type)
 
         print(f"💾 Results saved to {output_file}")
+        return output_file
+
+    def _generate_sweep_folder_name(self, results: list[SynthesisResult], run_type: str, timestamp: str) -> str:
+        """Generate descriptive folder name for sweep campaigns"""
+        if not results:
+            return f"sweep_{run_type}_{timestamp}"
+
+        # Analyze sweep characteristics
+        configs = sorted(set(r.config.config for r in results))
+        techs = sorted(set(r.config.technology for r in results))
+        freqs = sorted(set(r.config.frequency_mhz for r in results))
+
+        # Build descriptive name components
+        base_name = "sweep"
+
+        # Add run type
+        if run_type in ['freq-sweep', 'config-sweep', 'feature-sweep']:
+            type_part = run_type.replace('-', '_')
+        else:
+            type_part = run_type
+
+        # Add configuration info
+        if len(configs) == 1:
+            config_part = configs[0]
+        else:
+            config_part = f"{len(configs)}configs"
+
+        # Add frequency info for freq sweeps
+        if run_type == 'freq-sweep' and len(freqs) > 1:
+            freq_part = f"{min(freqs)}to{max(freqs)}MHz"
+        elif len(freqs) == 1:
+            freq_part = f"{freqs[0]}MHz"
+        else:
+            freq_part = ""
+
+        # Add technology
+        tech_part = techs[0] if len(techs) == 1 else f"{len(techs)}techs"
+
+        # Build final name
+        name_parts = [base_name, type_part, config_part]
+        if freq_part:
+            name_parts.append(freq_part)
+        name_parts.extend([tech_part, timestamp])
+
+        # Join with underscores and ensure reasonable length
+        folder_name = "_".join(name_parts)
+        if len(folder_name) > 60:  # Keep folder names reasonable
+            folder_name = f"{base_name}_{type_part}_{config_part}_{timestamp}"
+
+        return folder_name
+
+    def _generate_results_filename(self, results: list[SynthesisResult], run_type: str) -> str:
+        """Generate descriptive filename for results"""
+        timestamp = time.strftime("%H%M%S")  # Time only, date is in directory
+
+        if not results:
+            return f"empty_run_{run_type}_{timestamp}.json"
+
+        # Analyze run characteristics
+        configs = set(r.config.config for r in results)
+        techs = set(r.config.technology for r in results)
+        freqs = set(r.config.frequency_mhz for r in results)
+        features_set = set(r.config.feature_mode for r in results)
+
+        # Build descriptive components
+        config_part = "_".join(sorted(configs)) if len(configs) <= 3 else f"{len(configs)}configs"
+        tech_part = "_".join(sorted(techs)) if len(techs) <= 2 else f"{len(techs)}techs"
+
+        if len(freqs) == 1:
+            freq_part = f"{next(iter(freqs))}MHz"
+        elif len(freqs) <= 5:
+            freq_part = f"{min(freqs)}-{max(freqs)}MHz"
+        else:
+            freq_part = f"sweep_{min(freqs)}-{max(freqs)}MHz_{len(freqs)}pts"
+
+        # Add feature part if needed
+        features_set = set(r.config.feature_mode for r in results)
+        feature_part = ""
+        if len(features_set) > 1:
+            feature_part = f"_{len(features_set)}features"
+        elif next(iter(features_set)) != "baseline":
+            feature_part = f"_{next(iter(features_set))}"
+
+        return f"{run_type}_{config_part}_{tech_part}_{freq_part}{feature_part}_{timestamp}.json"
+
+    def _generate_run_metadata(self, results: list[SynthesisResult], run_type: str) -> dict:
+        """Generate comprehensive metadata for the run"""
+        return {
+            'timestamp': time.strftime("%Y-%m-%d %H:%M:%S"),
+            'iso_timestamp': time.strftime("%Y-%m-%dT%H:%M:%S"),
+            'run_type': run_type,
+            'machine_config': {
+                'name': self.machine_config.name,
+                'hostname': self.machine_config.hostname,
+                'description': self.machine_config.raw_config.get('description', ''),
+                'location': self.machine_config.raw_config.get('location', '')
+            },
+            'git_info': {
+                'hash': self._get_git_hash(),
+                'branch': self._get_git_branch(),
+                'status': self._get_git_status()
+            },
+            'environment': {
+                'wally_path': os.environ.get('WALLY', ''),
+                'synopsys_home': os.environ.get('SYNOPSYS_HOME', ''),
+                'python_version': f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+            },
+            'run_statistics': {
+                'total_runs': len(results),
+                'successful_runs': sum(1 for r in results if r.success),
+                'failed_runs': sum(1 for r in results if not r.success),
+                'total_time_s': sum(r.synthesis_time_s for r in results if r.synthesis_time_s),
+                'configurations': len(set(r.config.config for r in results)),
+                'technologies': len(set(r.config.technology for r in results)),
+                'frequency_points': len(set(r.config.frequency_mhz for r in results))
+            }
+        }
+
+    def _generate_results_summary(self, results: list[SynthesisResult]) -> dict:
+        """Generate statistical summary of results"""
+        successful = [r for r in results if r.success]
+
+        if not successful:
+            return {
+                'status': 'all_failed',
+                'success_rate': 0.0,
+                'total_runs': len(results)
+            }
+
+        areas = [r.area_um2 for r in successful if r.area_um2 is not None]
+        slacks = [r.slack_ns for r in successful if r.slack_ns is not None]
+        times = [r.synthesis_time_s for r in successful if r.synthesis_time_s is not None]
+
+        summary = {
+            'status': 'success' if len(successful) == len(results) else 'partial',
+            'success_rate': len(successful) / len(results),
+            'total_runs': len(results),
+            'successful_runs': len(successful),
+            'failed_runs': len(results) - len(successful)
+        }
+
+        if areas:
+            summary['area_statistics'] = {
+                'min_um2': min(areas),
+                'max_um2': max(areas),
+                'mean_um2': sum(areas) / len(areas),
+                'range_um2': max(areas) - min(areas),
+                'count': len(areas)
+            }
+
+        if slacks:
+            summary['timing_statistics'] = {
+                'min_slack_ns': min(slacks),
+                'max_slack_ns': max(slacks),
+                'mean_slack_ns': sum(slacks) / len(slacks),
+                'violations': sum(1 for s in slacks if s < 0),
+                'count': len(slacks)
+            }
+
+        if times:
+            summary['performance_statistics'] = {
+                'min_time_s': min(times),
+                'max_time_s': max(times),
+                'mean_time_s': sum(times) / len(times),
+                'total_time_s': sum(times),
+                'count': len(times)
+            }
+
+        return summary
+
+    def _get_git_branch(self) -> str:
+        """Get current git branch"""
+        try:
+            result = subprocess.run(['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                                  capture_output=True, text=True, cwd=self.base_dir)
+            return result.stdout.strip() if result.returncode == 0 else "unknown"
+        except:
+            return "unknown"
+
+    def _get_git_status(self) -> str:
+        """Get git working directory status"""
+        try:
+            result = subprocess.run(['git', 'status', '--porcelain'],
+                                  capture_output=True, text=True, cwd=self.base_dir)
+            if result.returncode == 0:
+                return "clean" if not result.stdout.strip() else "dirty"
+            return "unknown"
+        except:
+            return "unknown"
+
+    def _create_sweep_summary(self, sweep_dir: Path, results: list[SynthesisResult], run_type: str):
+        """Create additional sweep-specific files for better organization"""
+
+        # Create a sweep metadata file
+        sweep_info = {
+            'sweep_type': run_type,
+            'total_runs': len(results),
+            'successful_runs': sum(1 for r in results if r.success),
+            'configurations': sorted(set(r.config.config for r in results)),
+            'technologies': sorted(set(r.config.technology for r in results)),
+            'frequency_range': {
+                'min': min(r.config.frequency_mhz for r in results),
+                'max': max(r.config.frequency_mhz for r in results)
+            },
+            'timestamp': time.strftime("%Y-%m-%d %H:%M:%S"),
+            'git_hash': self._get_git_hash(),
+            'machine': self.machine_config.name
+        }
+
+        with open(sweep_dir / "sweep_info.json", 'w') as f:
+            json.dump(sweep_info, f, indent=2)
+
+        # Create individual run directories with key files
+        for i, result in enumerate(results):
+            run_dir_name = f"run_{i+1:02d}_{result.config.config}_{result.config.frequency_mhz}MHz"
+            run_summary_dir = sweep_dir / "individual_runs" / run_dir_name
+            run_summary_dir.mkdir(parents=True, exist_ok=True)
+
+            # Create run summary
+            run_summary = {
+                'config': result.config.__dict__,
+                'success': result.success,
+                'metrics': {
+                    'area_um2': result.area_um2,
+                    'slack_ns': result.slack_ns,
+                    'power_mw': result.power_mw,
+                    'cell_count': result.cell_count,
+                    'synthesis_time_s': result.synthesis_time_s,
+                    'critical_path_ns': result.critical_path_ns
+                },
+                'error_message': result.error_message,
+                'run_directory': str(result.run_directory) if result.run_directory else None
+            }
+
+            with open(run_summary_dir / "run_summary.json", 'w') as f:
+                json.dump(run_summary, f, indent=2)
+
+            # Copy key report files if they exist
+            if result.run_directory and result.run_directory.exists():
+                reports_dir = result.run_directory / "reports"
+                if reports_dir.exists():
+                    summary_reports_dir = run_summary_dir / "reports"
+                    summary_reports_dir.mkdir(exist_ok=True)
+
+                    # Copy key reports
+                    for report_file in ["area.rep", "timing.rep", "qor.rep"]:
+                        src_file = reports_dir / report_file
+                        if src_file.exists():
+                            shutil.copy2(src_file, summary_reports_dir / report_file)
+
+        # Create a human-readable sweep summary
+        summary_text = self._generate_sweep_text_summary(results, run_type)
+        with open(sweep_dir / "README.md", 'w') as f:
+            f.write(summary_text)
+
+        print(f"📁 Sweep organized in {sweep_dir}")
+
+    def _generate_sweep_text_summary(self, results: list[SynthesisResult], run_type: str) -> str:
+        """Generate a human-readable summary of the sweep"""
+        successful = [r for r in results if r.success]
+
+        summary = []
+        summary.append(f"# {run_type.replace('-', ' ').title()} Results")
+        summary.append(f"Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        summary.append(f"Machine: {self.machine_config.name}")
+        summary.append(f"Git Hash: {self._get_git_hash()}")
+        summary.append("")
+
+        summary.append("## Overview")
+        summary.append(f"- **Total Runs**: {len(results)}")
+        summary.append(f"- **Successful**: {len(successful)} ({len(successful)/len(results)*100:.1f}%)")
+        summary.append(f"- **Configurations**: {', '.join(sorted(set(r.config.config for r in results)))}")
+        summary.append(f"- **Technologies**: {', '.join(sorted(set(r.config.technology for r in results)))}")
+
+        freqs = [r.config.frequency_mhz for r in results]
+        summary.append(f"- **Frequency Range**: {min(freqs)}-{max(freqs)} MHz")
+        summary.append("")
+
+        if successful:
+            areas = [r.area_um2 for r in successful if r.area_um2 is not None]
+            if areas:
+                summary.append("## Area Results")
+                summary.append(f"- **Range**: {min(areas):,.0f} - {max(areas):,.0f} µm²")
+                summary.append(f"- **Average**: {sum(areas)/len(areas):,.0f} µm²")
+                best_area = min(successful, key=lambda r: r.area_um2 if r.area_um2 else float('inf'))
+                summary.append(f"- **Best**: {best_area.config.config} @ {best_area.config.frequency_mhz}MHz = {best_area.area_um2:,.0f} µm²")
+                summary.append("")
+
+            slacks = [r.slack_ns for r in successful if r.slack_ns is not None]
+            if slacks:
+                violations = sum(1 for s in slacks if s < 0)
+                summary.append("## Timing Results")
+                summary.append(f"- **Slack Range**: {min(slacks):.3f} - {max(slacks):.3f} ns")
+                summary.append(f"- **Violations**: {violations}/{len(slacks)} runs")
+                if violations == 0:
+                    summary.append("- **Status**: ✅ All runs met timing")
+                else:
+                    summary.append(f"- **Status**: ⚠️ {violations} timing violations")
+                summary.append("")
+
+            times = [r.synthesis_time_s for r in results if r.synthesis_time_s is not None]
+            if times:
+                summary.append("## Performance")
+                summary.append(f"- **Total Time**: {sum(times):.1f} seconds")
+                summary.append(f"- **Average Time**: {sum(times)/len(times):.1f} seconds per run")
+                fastest = min(results, key=lambda r: r.synthesis_time_s if r.synthesis_time_s else float('inf'))
+                summary.append(f"- **Fastest**: {fastest.config.config} @ {fastest.config.frequency_mhz}MHz = {fastest.synthesis_time_s:.1f}s")
+                summary.append("")
+
+        summary.append("## Individual Runs")
+        summary.append("| Run | Config | Freq (MHz) | Area (µm²) | Slack (ns) | Time (s) | Status |")
+        summary.append("|-----|--------|------------|------------|------------|----------|--------|")
+
+        for i, result in enumerate(results, 1):
+            area_str = f"{result.area_um2:,.0f}" if result.area_um2 else "N/A"
+            slack_str = f"{result.slack_ns:.3f}" if result.slack_ns is not None else "N/A"
+            time_str = f"{result.synthesis_time_s:.1f}" if result.synthesis_time_s else "N/A"
+            status = "✅" if result.success else "❌"
+
+            summary.append(f"| {i:2d} | {result.config.config:6} | {result.config.frequency_mhz:6} | {area_str:>10} | {slack_str:>8} | {time_str:>6} | {status} |")
+
+        summary.append("")
+        summary.append("## Files in this directory")
+        summary.append("- `sweep_info.json` - Machine-readable sweep metadata")
+        summary.append("- `[timestamp].json` - Complete results with all data")
+        summary.append("- `individual_runs/` - Per-run summaries and key reports")
+        summary.append("- `README.md` - This human-readable summary")
+
+        return "\n".join(summary)
 
 
 if __name__ == '__main__':

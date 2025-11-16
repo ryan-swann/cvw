@@ -259,10 +259,35 @@ class FrequencySweep:
             with open(filename) as f:
                 content = f.read()
 
-            # Extract leakage power
-            leakage_match = re.search(r'Cell Leakage Power\s*=\s*([0-9.e-]+)\s*nW', content)
+            # Extract total power from hierarchical power report
+            # Look for the top-level module line with power data
+            lines = content.split('\n')
+
+            for line in lines:
+                # Look for the top-level module line with power data
+                if 'wallypipelinedcorewrapper' in line or 'wallypipelinedcore' in line:
+                    # Split the line and extract power values
+                    parts = line.strip().split()
+                    if len(parts) >= 5:
+                        try:
+                            # The total power is typically the 4th power column (index 4)
+                            total_power_mw = float(parts[4])
+                            if total_power_mw > 0:
+                                results['power_mw'] = total_power_mw
+                                break
+                        except (ValueError, IndexError):
+                            continue
+
+            # Fallback: Look for "Total" power in the summary
+            if 'power_mw' not in results:
+                total_match = re.search(r'Total\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)', content)
+                if total_match:
+                    results['power_mw'] = float(total_match.group(4))  # Total power in mW
+
+            # Also extract leakage power for additional analysis (keep backward compatibility)
+            leakage_match = re.search(r'([0-9.]+)\s+nW', content)
             if leakage_match:
-                results['leakage_power'] = float(leakage_match.group(1))
+                results['leakage_power_nw'] = float(leakage_match.group(1))
 
         except Exception as e:
             print(f"Error parsing power report: {e}")

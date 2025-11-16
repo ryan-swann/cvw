@@ -21,6 +21,7 @@ class MachineConfig:
     raw_config: dict[str, Any]
     name: str
     description: str
+    hostname: str
 
     def get_tool_paths(self, tool_name: str, subtool: str) -> list:
         """Get tool paths for a specific tool"""
@@ -168,7 +169,8 @@ class ConfigManager:
         machine_config = MachineConfig(
             raw_config=raw_config,
             name=config_name,
-            description=raw_config.get('description', f"Configuration: {config_name}")
+            description=raw_config.get('description', f"Configuration: {config_name}"),
+            hostname=socket.gethostname()
         )
 
         # Cache it

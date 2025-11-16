@@ -9,6 +9,7 @@ No more Makefile/TCL mess - everything is maintainable Python code.
 
 import argparse
 import sys
+from pathlib import Path
 
 # Import our Wally synthesis engine
 from wally_synth_engine import CVWSynthesisEngine, SynthesisConfig, SynthesisResult
@@ -195,6 +196,17 @@ Examples:
     # Comprehensive
     subparsers.add_parser('comprehensive', help='Complete synthesis characterization')
 
+    # Dashboard
+    dashboard_parser = subparsers.add_parser('dashboard', help='Analysis dashboard for synthesis results')
+    dashboard_parser.add_argument('--days', type=int, default=7, help='Days of history to analyze')
+    dashboard_parser.add_argument('--report', action='store_true', help='Generate text summary report')
+    dashboard_parser.add_argument('--plots', action='store_true', help='Generate publication plots')
+    dashboard_parser.add_argument('--export', choices=['csv', 'xlsx'], help='Export data table')
+    dashboard_parser.add_argument('--config-filter', nargs='+',
+                                 choices=['rv32e', 'rv32i', 'rv32imc', 'rv32gc', 'rv64i', 'rv64gc'],
+                                 help='Filter to specific configurations')
+    dashboard_parser.add_argument('--output-dir', type=str, help='Output directory for plots/exports')
+
     args = parser.parse_args()
 
     if args.command is None:
@@ -311,12 +323,46 @@ Examples:
 
             results = all_results
 
-        # Print summary
+        elif args.command == 'dashboard':
+            # Dashboard analysis
+            from synthesis_dashboard import WallySynthesisDashboard
+            dashboard = WallySynthesisDashboard()
+
+            output_dir = None
+            if args.output_dir:
+                output_dir = Path(args.output_dir)
+
+            if args.report or not any([args.plots, args.export]):
+                # Generate and show summary report (default)
+                print(dashboard.generate_summary_report(days_back=args.days))
+
+            if args.plots:
+                # Generate publication plots
+                files = dashboard.generate_publication_suite(
+                    output_dir=output_dir,
+                    config_filter=args.config_filter
+                )
+                print(f"\n📊 Generated {len(files)} publication files")
+
+            if args.export:
+                # Export data table
+                export_path = dashboard.export_data_table(
+                    output_path=output_dir / f"synthesis_data.{args.export}" if output_dir else None,
+                    format=args.export
+                )
+                print(f"\n📋 Data exported to {export_path}")
+
+            return  # Exit early for dashboard commands
+
+        # Print summary for synthesis commands
         print_results_summary(results)
 
         # Save results if requested
         if args.save_results:
-            engine.save_results(results, args.save_results)
+            engine.save_results(results, args.save_results, run_type=args.command)
+        else:
+            # Always save results with auto-generated name
+            engine.save_results(results, run_type=args.command)
 
         # Exit with error if any synthesis failed
         failed_count = sum(1 for r in results if not r.success)
